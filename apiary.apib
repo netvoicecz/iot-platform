@@ -1,0 +1,879 @@
+FORMAT: 1A
+HOST: https://internetthings.cz/api/
+
+# IoT Platform
+
+API projektu IoT Platform.
+
+
+# Group Groups
+
+Hierarchie skupin zařízení. Skupina může obsahovat vnořené podskupiny.
+
+## Group [/groups/default]
+
+### Retrieve default group [GET]
+Vrací defaultní skupinu uživatele (nejvyšší možnou, ke které má přístup).
+
++ Response 200 (application/json)
+
+        {
+            "id": 2,
+            "name": "Ředitelství Hradec Králové",
+            "children": [
+                {
+                    "id": 8,
+                    "name": "KŘ Brno",
+                    "children": [
+                        {
+                            "id": 18,
+                            "name": "LS Bučovice"
+                        },
+                        {
+                            "id": 19,
+                            "name": "LS Černá Hora"
+                        }
+                    ]
+                },
+                {
+                    "id": 9,
+                    "name": "KŘ České Budějovice",
+                    "children": [
+                        {
+                            "id": 20,
+                            "name": "LS Český Krumlov"
+                        },
+                        {
+                            "id": 21,
+                            "name": "LS Hluboká nad Vltavou"
+                        }
+                    ]
+                },
+                {
+                    "id": 13,
+                    "name": "KŘ Choceň",
+                    "children": [
+                        {
+                            "id": 17,
+                            "name": "LS Svitavy"
+                        }
+                    ]
+                }
+            ]
+        }
+
+
+# Group Device state events
+
+Události o stavu senzorů odesílané ze zařízení.
+
+## Device state event collection [/devices/state-events]
+
+### List all device state events  [GET /devices/state-events{?device_id,sensor_id}]
+Atribut senzoru `name` doplňujeme kvůli usnadnění práce ve frontendu.
+
++ Parameters
+    + `device_id` (optional, number) - ID zařízení, jehož události nás zajímají. Pokud není zadán, není na zařízení aplikováno žádné omezení.
+    + `sensor_id` (optional, number) - ID senzoru, pro který nás zajímají události. Pokud není zadán, není na senzor aplikováno žádné omezení.
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 63,
+                "deviceId": 442,
+                "date": "2017-09-27T11:12:25.284+02:00",
+                "sensors": [
+                    {
+                        "id": 45,
+                        "name": "Stav baterie",
+                        "value": 90
+                    }
+                ]
+            },
+            {
+                "id": 65,
+                "deviceId": 442,
+                "date": "2017-09-27T11:12:35.124+02:00",
+                "sensors": [
+                    {
+                        "id": 32,
+                        "name": "Hmotnost brouků",
+                        "value": 52
+                    },
+                    {
+                        "id": 45,
+                        "name": "Stav baterie",
+                        "value": 89
+                    }
+                ]
+            },
+            {
+                "id": 70,
+                "deviceId": 621,
+                "date": "2017-09-27T11:12:44.954+02:00",
+                "sensors": [
+                    {
+                        "id": 61,
+                        "name": "Teplota",
+                        "value": 55
+                    }
+                ]
+            }
+        ]
+
+## Device state event [/devices/state-events/{id}]
++ Parameters
+    + id: 70 (number) - id události
+
+### Retrieve device state event [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 70,
+            "deviceId": 621,
+            "date": "2017-09-27T11:12:44.954+02:00",
+            "sensors": [
+                {
+                    "id": 61,
+                    "name": "Teplota",
+                    "value": 55
+                }
+            ]
+        }
+
+
+# Group Device types
+
+Typ zařízení předepisuje společné vlastnosti zařízení.
+
+## Device type collection [/device-types]
+
+### List all types [GET]
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 442,
+                "name": "Lapač kůrovce",
+                "sensors": [
+                    {
+                        "id": 224,
+                        "name": "Hmotnost brouků",
+                        "type": "NUMBER",
+                        "unit": "g",
+                        "alert": {
+                            "direction": "LESS_IS_BETTER",
+                            "warning": 220,
+                            "critical": 280
+                        }
+                    },
+                    {
+                        "id": 196,
+                        "name": "Stav baterie",
+                        "type": "NUMBER",
+                        "unit": "%",
+                        "alert": {
+                            "direction": "MORE_IS_BETTER",
+                            "warning": 20,
+                            "critical": 10
+                        }
+                    }
+                ]
+            },
+            {
+                "id": 621,
+                "name": "Teploměr",
+                "sensors": [
+                    {
+                        "id": 215,
+                        "name": "Teplota",
+                        "type": "NUMBER",
+                        "unit": "°C",
+                        "alert": {
+                            "direction": "LESS_IS_BETTER",
+                            "warning": 50,
+                            "critical": 65
+                        }
+                    }
+                ]
+            }
+        ]
+
+### Create new type [POST]
++ Request (application/json)
+
+        {
+            "name": "Lapač kůrovce",
+            "sensors": [
+                {
+                    "name": "Hmotnost brouků",
+                    "type": "NUMBER",
+                    "unit": "g",
+                    "alert": {
+                        "direction": "LESS_IS_BETTER",
+                        "warning": 220,
+                        "critical": 280
+                    }
+                },
+                {
+                    "name": "Stav baterie",
+                    "type": "NUMBER",
+                    "unit": "%",
+                    "alert": {
+                        "direction": "MORE_IS_BETTER",
+                        "warning": 20,
+                        "critical": 10
+                    }
+                }
+            ]
+        }
+
++ Response 201
+
+        {
+            "id": 442,
+            "name": "Lapač kůrovce",
+            "sensors": [
+                {
+                    "id": 224,
+                    "name": "Hmotnost brouků",
+                    "type": "NUMBER",
+                    "unit": "g",
+                    "alert": {
+                        "direction": "LESS_IS_BETTER",
+                        "warning": 220,
+                        "critical": 280
+                    }
+                },
+                {
+                    "id": 196,
+                    "name": "Stav baterie",
+                    "type": "NUMBER",
+                    "unit": "%",
+                    "alert": {
+                        "direction": "MORE_IS_BETTER",
+                        "warning": 20,
+                        "critical": 10
+                    }
+                }
+            ]
+        }
+
+## Device type [/device-types/{id}]
++ Parameters
+    + id: 442 (number) - id typu
+
+### Retrieve type [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 442,
+            "name": "Lapač kůrovce",
+            "sensors": [
+                {
+                    "id": 224,
+                    "name": "Hmotnost brouků",
+                    "type": "NUMBER",
+                    "unit": "g",
+                    "alert": {
+                        "direction": "LESS_IS_BETTER",
+                        "warning": 220,
+                        "critical": 280
+                    }
+                },
+                {
+                    "id": 196,
+                    "name": "Stav baterie",
+                    "type": "NUMBER",
+                    "unit": "%",
+                    "alert": {
+                        "direction": "MORE_IS_BETTER",
+                        "warning": 20,
+                        "critical": 10
+                    }
+                }
+            ]
+        }
+
+### Replace type [PUT]
++ Request (application/json)
+
+        {
+            "id": 442,
+            "name": "Lapač kůrovce",
+            "sensors": [
+                {
+                    "id": 224,
+                    "name": "Hmotnost obsahu",
+                    "type": "NUMBER",
+                    "unit": "g",
+                    "alert": {
+                        "direction": "LESS_IS_BETTER",
+                        "warning": 210,
+                        "critical": 250
+                    }
+                },
+                {
+                    "id": 196,
+                    "name": "Stav baterie",
+                    "type": "NUMBER",
+                    "unit": "%",
+                    "alert": {
+                        "direction": "MORE_IS_BETTER",
+                        "warning": 20,
+                        "critical": 10
+                    }
+                }
+            ]
+        }
+        
++ Response 200
+
+        {
+            "id": 442,
+            "name": "Lapač kůrovce",
+            "sensors": [
+                {
+                    "id": 224,
+                    "name": "Hmotnost obsahu",
+                    "type": "NUMBER",
+                    "unit": "g",
+                    "alert": {
+                        "direction": "LESS_IS_BETTER",
+                        "warning": 210,
+                        "critical": 250
+                    }
+                },
+                {
+                    "id": 196,
+                    "name": "Stav baterie",
+                    "type": "NUMBER",
+                    "unit": "%",
+                    "alert": {
+                        "direction": "MORE_IS_BETTER",
+                        "warning": 20,
+                        "critical": 10
+                    }
+                }
+            ]
+        }
+
+### Delete type [DELETE]
++ Response 204
+
+### Create devices [POST /device-types/{id}/create-devices]
+
+Hromadně vytvoří daný počet zařízení tohoto typu
+
++ Request (application/json)
+
+        {
+            "quantity": 2
+        }
+
++ Response 204
+
+
+# Group Devices
+
+Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji polohu, baterii a připojení k internetu.
+
+## Device collection [/devices]
+
+### List all devices [GET /devices{?group}]
++ Parameters
+    + `group`: 2 (optional, number) - ID skupiny, jež omezuje množinu požadovaných zařízení. Každé vrácené zařízení musí mít tuto skupinu na cestě stromu od listu (tj. zařízení) ke kořenu stromu skupin.
+    
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 504,
+                "type": 442,
+                "typeName": "Lapač kůrovce",
+                "externalId": "NSM4577",
+                "state": "ACTIVE",
+                "geolocation": {
+                    "lat": 49.200154,
+                    "lng": 16.601425
+                },
+                "sensors": [
+                    {
+                        "id": 32,
+                        "type": 224,
+                        "typeName": "Hmotnost brouků",
+                        "name": "Hmotnost brouků",
+                        "value": 263
+                    },
+                    {
+                        "id": 45,
+                        "type": 196,
+                        "typeName": "Stav baterie",
+                        "name": "Stav baterie",
+                        "value": 74
+                    }                
+                ]
+            },
+            {
+                "id": 601,
+                "type": 442,
+                "typeName": "Lapač kůrovce",
+                "externalId": "NSM4588",
+                "state": "INACTIVE",
+                "geolocation": {
+                    "lat": 49.202174,
+                    "lng": 16.602245
+                },
+                "sensors": [
+                    {
+                        "id": 34,
+                        "type": 224,
+                        "typeName": "Hmotnost brouků",
+                        "name": "Hmotnost brouků",
+                        "value": 121
+                    },
+                    {
+                        "id": 45,
+                        "type": 196,
+                        "typeName": "Stav baterie",
+                        "name": "Stav baterie",
+                        "value": 66
+                    }                
+                ]
+            }
+        ]
+
+## Device [/devices/{id}]
++ Parameters
+    + id: 504 (number) - ID zařízení
+
+### Retrieve device [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 504,
+            "type": 442,
+            "typeName": "Lapač kůrovce",
+            "externalId": "NSM4577",
+            "state": "ACTIVE",
+            "geolocation": {
+                "lat": 49.200154,
+                "lng": 16.601425
+            },
+            "sensors": [
+                {
+                    "id": 32,
+                    "type": 224,
+                    "typeName": "Hmotnost brouků",
+                    "name": "Hmotnost brouků",
+                    "value": 263
+                },
+                {
+                    "id": 45,
+                    "type": 196,
+                    "typeName": "Stav baterie",
+                    "name": "Stav baterie",
+                    "value": 74
+                }                
+            ]
+        }
+
+### Update device [PUT]
++ Request (application/json)
+
+        {
+            "id": 504,
+            "externalId": "NSM4576",
+            "state": "ACTIVE",
+            "geolocation": {
+                "lat": 49.200158,
+                "lng": 17.601424
+            }
+        }
+
++ Response 200
+
+        {
+            "id": 504,
+            "type": 442,
+            "typeName": "Lapač kůrovce",
+            "externalId": "NSM4576",
+            "state": "ACTIVE",
+            "geolocation": {
+                "lat": 49.200158,
+                "lng": 16.601424
+            },
+            "sensors": [
+                {
+                    "id": 32,
+                    "type": 224,
+                    "typeName": "Hmotnost brouků",
+                    "name": "Hmotnost brouků",
+                    "value": 263
+                },
+                {
+                    "id": 45,
+                    "type": 196,
+                    "typeName": "Stav baterie",
+                    "name": "Stav baterie",
+                    "value": 74
+                }                
+            ]
+        }
+        
+### Delete device [DELETE]
++ Response 204
+
+
+# Group Reports
+
+# Report collection [/report]
+
+### List all reports [GET]
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 2,
+                "name": "Zvýšený výskyt kůrovce",
+                "deviceType": 442,
+                "conditions": [
+                    {
+                        "sensorType": 224,
+                        "name": "Hmotnost brouků",
+                        "min": 120,
+                        "max": 180
+                    }
+                ],
+                "onEnter": {
+                    "email": [
+                        "ondrej.michal@netvoice.cz",
+                        "manager@netvoice.cz"
+                    ],
+                    "state": "WARNING"
+                },
+                "onExit": {
+                    "email": [
+                        "manager@netvoice.cz"
+                    ]
+                }
+            },
+            {
+                "id": 3,
+                "name": "Extrémní výskyt kůrovce",
+                "deviceType": 442,
+                "conditions": [
+                    {
+                        "sensorType": 224,
+                        "name": "Hmotnost brouků",
+                        "min": 180
+                    }
+                ],
+                "onEnter": {
+                    "email": ["ondrej.michal@netvoice.cz"],
+                    "sms": ["+420721000000"],
+                    "state": "CRITICAL"
+                }
+            },
+            {
+                "id": 6,
+                "name": "Nutná kontrola lapače",
+                "deviceType": 442,
+                "conditions": [
+                    {
+                        "sensorType": 224,
+                        "name": "Hmotnost brouků",
+                        "min": 180
+                    },
+                    {
+                        "sensorType": 196,
+                        "name": "Stav baterie",
+                        "max": 15
+                    }
+                ],
+                "onEnter": {
+                    "sms": ["+420721999999"]
+                }
+            }
+        ]
+
+### Create new report [POST]
++ Request (application/json)
+
+        {
+            "name": "Zvýšený výskyt kůrovce",
+            "deviceType": 442,
+            "conditions": [
+                {
+                    "sensorType": 224,
+                    "min": 120,
+                    "max": 180
+                }
+            ],
+            "onEnter": {
+                "email": [
+                    "ondrej.michal@netvoice.cz",
+                    "manager@netvoice.cz"
+                ],
+                "state": "WARNING"
+            },
+            "onExit": {
+                "email": [
+                    "manager@netvoice.cz"
+                ]
+            }
+        }
+
++ Response 201
+
+        {
+            "id": 2,
+            "name": "Zvýšený výskyt kůrovce",
+            "deviceType": 442,
+            "conditions": [
+                {
+                    "sensorType": 224,
+                    "name": "Hmotnost brouků",
+                    "min": 120,
+                    "max": 180
+                }
+            ],
+            "onEnter": {
+                "email": [
+                    "ondrej.michal@netvoice.cz",
+                    "manager@netvoice.cz"
+                ],
+                "state": "WARNING"
+            },
+            "onExit": {
+                "email": [
+                    "manager@netvoice.cz"
+                ]
+            }
+        }
+
+## Report [/reports/{id}]
++ Parameters
+    + id: 2 (number) - ID reportu
+
+### Retrieve report [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 2,
+            "name": "Zvýšený výskyt kůrovce",
+            "deviceType": 442,
+            "conditions": [
+                {
+                    "sensorType": 224,
+                    "name": "Hmotnost brouků",
+                    "min": 120,
+                    "max": 180
+                }
+            ],
+            "onEnter": {
+                "email": [
+                    "ondrej.michal@netvoice.cz",
+                    "manager@netvoice.cz"
+                ],
+                "state": "WARNING"
+            },
+            "onExit": {
+                "email": [
+                    "manager@netvoice.cz"
+                ]
+            }
+        }
+
+### Update report [PUT]
++ Request (application/json)
+
+        {
+            "id": 2,
+            "name": "Zvýšený výskyt kůrovce",
+            "deviceType": 442,
+            "conditions": [
+                {
+                    "sensorType": 224,
+                    "min": 120,
+                    "max": 200
+                }
+            ],
+            "onEnter": {
+                "email": [
+                    "ondrej.michal@netvoice.cz"
+                ],
+                "state": "WARNING"
+            },
+            "onExit": {
+                "email": [
+                    "ondrej.michal@netvoice.cz"
+                ]
+            }
+        }
+        
++ Response 200
+
+        {
+            "id": 2,
+            "name": "Zvýšený výskyt kůrovce",
+            "deviceType": 442,
+            "conditions": [
+                {
+                    "sensorType": 224,
+                    "name": "Hmotnost brouků",
+                    "min": 120,
+                    "max": 200
+                }
+            ],
+            "onEnter": {
+                "email": [
+                    "ondrej.michal@netvoice.cz"
+                ],
+                "state": "WARNING"
+            },
+            "onExit": {
+                "email": [
+                    "ondrej.michal@netvoice.cz"
+                ]
+            }
+        }
+
+### Delete report [DELETE]
++ Response 204
+
+
+# Group Users
+
+Uživatelské účty.
+
+## User collection [/users]
+
+### List all users [GET]
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 12,
+                "firstName": "Jan",
+                "lastName": "Novák",
+                "email": "jan.novak@email.cz",
+                "phone": "777123456",
+                "devices": [
+                    504
+                ]
+            },
+            {
+                "id": 16,
+                "firstName": "František",
+                "lastName": "Novotný",
+                "email": "fnovotny@email.cz",
+                "phone": "777000000",
+                "devices": [
+                    601
+                ]
+            }
+        ]
+
+
+### Create new user [POST]
++ Request (application/json)
+
+        {
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.cz",
+            "phone": "777123456"
+        }
+
++ Response 201
+
+        {
+            "id": 12,
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.cz",
+            "phone": "777123456"
+        }
+
+## User [/users/{id}]
++ Parameters
+    + id: 12 (number) - id uživatele
+
+### Retrieve user [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 12,
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.cz",
+            "phone": "777123456",
+            "devices": [
+                504
+            ]
+        }
+
+### Update user [PUT]
++ Request (application/json)
+
+        {
+            "id": 12,
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.com",
+            "phone": "777123456"
+        }
+        
++ Response 200
+
+        {
+            "id": 12,
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.com",
+            "phone": "777123456",
+            "devices": [
+                504
+            ]
+        }
+
+### Delete user [DELETE]
++ Response 204
+
+### Login user [POST /oauth/token]
+
++ Request (multipart/form-data; boundary=----WebKitFormBoundary)
+
+        ------WebKitFormBoundary
+        Content-Disposition: form-data; name="grant_type"
+        
+        password
+        ------WebKitFormBoundary
+        Content-Disposition: form-data; name="scope"
+        
+        trust
+        ------WebKitFormBoundary
+        Content-Disposition: form-data; name="username"
+        
+        admin@netvoice.cz
+        ------WebKitFormBoundary
+        Content-Disposition: form-data; name="password"
+        
+        123456
+        ------WebKitFormBoundary--
+    
++ Response 200 (application/json)
+
+        {
+            "access_token": "8e735586-04b7-46df-ab7a-d89918d99bcb",
+            "token_type": "bearer",
+            "refresh_token": "7483d27f-dddd-49b8-a396-302ec722e8c0",
+            "expires_in": 43199,
+            "scope": "trust"
+        }
+        
+
+
+### Authorization test [GET /authorized-resource]
++ Response 401
