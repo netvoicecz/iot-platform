@@ -6,140 +6,528 @@ HOST: https://internetthings.cz/api/
 API projektu IoT Platform.
 
 
-# Group Groups
+# Group Users
 
-Hierarchie skupin zařízení. Skupina může obsahovat vnořené podskupiny.
+Uživatelé systému, ať už jde o koncové uživatele nebo administrátory.
 
-## Group [/groups/default]
+## User collection [/users]
 
-### Retrieve default group [GET]
-Vrací defaultní skupinu uživatele (nejvyšší možnou, ke které má přístup).
-
-+ Response 200 (application/json)
-
-        {
-            "id": 2,
-            "name": "Ředitelství Hradec Králové",
-            "children": [
-                {
-                    "id": 8,
-                    "name": "KŘ Brno",
-                    "children": [
-                        {
-                            "id": 18,
-                            "name": "LS Bučovice"
-                        },
-                        {
-                            "id": 19,
-                            "name": "LS Černá Hora"
-                        }
-                    ]
-                },
-                {
-                    "id": 9,
-                    "name": "KŘ České Budějovice",
-                    "children": [
-                        {
-                            "id": 20,
-                            "name": "LS Český Krumlov"
-                        },
-                        {
-                            "id": 21,
-                            "name": "LS Hluboká nad Vltavou"
-                        }
-                    ]
-                },
-                {
-                    "id": 13,
-                    "name": "KŘ Choceň",
-                    "children": [
-                        {
-                            "id": 17,
-                            "name": "LS Svitavy"
-                        }
-                    ]
-                }
-            ]
-        }
-
-
-# Group Device state events
-
-Události o stavu senzorů odesílané ze zařízení.
-
-## Device state event collection [/devices/state-events]
-
-### List all device state events  [GET /devices/state-events{?device_id,sensor_id}]
-Atribut senzoru `name` doplňujeme kvůli usnadnění práce ve frontendu.
-
-+ Parameters
-    + `device_id` (optional, number) - ID zařízení, jehož události nás zajímají. Pokud není zadán, není na zařízení aplikováno žádné omezení.
-    + `sensor_id` (optional, number) - ID senzoru, pro který nás zajímají události. Pokud není zadán, není na senzor aplikováno žádné omezení.
+### List users [GET]
 + Response 200 (application/json)
 
         [
             {
-                "id": 63,
-                "deviceId": 442,
-                "date": "2017-09-27T11:12:25.284+02:00",
-                "sensors": [
-                    {
-                        "id": 45,
-                        "name": "Stav baterie",
-                        "value": 90
-                    }
+                "id": 12,
+                "firstName": "Jan",
+                "lastName": "Novák",
+                "email": "jan.novak@email.cz",
+                "phone": "777123456"
+            },
+            {
+                "id": 16,
+                "firstName": "František",
+                "lastName": "Novotný",
+                "email": "fnovotny@email.cz",
+                "phone": "777000000"
+            }
+        ]
+
+### Create user [POST]
++ Request (application/json)
+
+        {
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.cz",
+            "phone": "777123456"
+        }
+
++ Response 201
+
+        {
+            "id": 12,
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.cz",
+            "phone": "777123456"
+        }
+
+## User [/users/{id}]
++ Parameters
+    + id: 12 (number) - id uživatele
+
+### Retrieve user [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 12,
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.cz",
+            "phone": "777123456"
+        }
+
+### Replace user [PUT]
++ Request (application/json)
+
+        {
+            "id": 12,
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.com",
+            "phone": "777123456"
+        }
+        
++ Response 200
+
+        {
+            "id": 12,
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.com",
+            "phone": "777123456"
+        }
+
+### Delete user [DELETE]
++ Response 204
+
+### Login user [POST /oauth/token]
+
++ Request (multipart/form-data; boundary=----WebKitFormBoundary)
+
+        ------WebKitFormBoundary
+        Content-Disposition: form-data; name="grant_type"
+        
+        password
+        ------WebKitFormBoundary
+        Content-Disposition: form-data; name="scope"
+        
+        trust
+        ------WebKitFormBoundary
+        Content-Disposition: form-data; name="username"
+        
+        admin@netvoice.cz
+        ------WebKitFormBoundary
+        Content-Disposition: form-data; name="password"
+        
+        123456
+        ------WebKitFormBoundary--
+    
++ Response 200 (application/json)
+
+        {
+            "access_token": "8e735586-04b7-46df-ab7a-d89918d99bcb",
+            "token_type": "bearer",
+            "refresh_token": "7483d27f-dddd-49b8-a396-302ec722e8c0",
+            "expires_in": 43199,
+            "scope": "trust"
+        }
+        
+
+
+### Authorization test [GET /authorized-resource]
++ Response 401
+
+
+# Group Companies
+
+Company samotná přímo není workplace, ale obsahuje strom skupin, jejíž uzly jsou workplaces.
+
+## Company collection [/companies]
+### List companies [GET]
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 27,
+                "name": "Chytré krabičky, s.r.o.",
+                "rootGroup": 2
+            },
+            {
+                "id": 29,
+                "name": "Ještě chytřejší krabičky, s.r.o.",
+                "rootGroup": 4
+            }
+        ]
+
+### Create company [POST]
+Firmu vytváří přímo koncový uživatel (nikoli admin). Sám je automaticky přidán mezi členy firmy.
+
++ Request (application/json)
+
+        {
+            "name": "Chytré krabičky, s.r.o."
+        }
+
++ Response 201
+
+        {
+            "id": 27,
+            "name": "Chytré krabičky, s.r.o.",
+            "rootGroup": 2
+        }
+
+
+## Company [/companies/{id}]
++ Parameters
+    + id: 27 (number) - id firmy
+
+### Retrieve company [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 27,
+            "name": "Chytré krabičky, s.r.o.",
+            "rootGroup": 2
+        }
+
+### Replace company [PUT]
++ Request (application/json)
+
+        {
+            "id": 27,
+            "name": "Chytré krabice, s.r.o."
+        }
+
++ Response 200
+
+        {
+            "id": 27,
+            "name": "Chytré krabice, s.r.o.",
+            "rootGroup": 2
+        }
+
+### Delete company [DELETE]
++ Response 204
+
+
+# Group Groups
+
+Stromová hierarchie skupin slouží k členění firmy na menší celky. Skupina obsahuje zařízení, uživatele apod.
+
+## Group collection [/groups]
+### List groups [GET]
+Vrací všechny skupiny (ke kterým má uživatel přístup).
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 2,
+                "name": "Ředitelství Hradec Králové",
+                "parent": null,
+                "workplace": 4
+            },
+            {
+                "id": 8,
+                "name": "KŘ Brno",
+                "parent": 2,
+                "workplace": 5
+            },
+            {
+                "id": 18,
+                "name": "LS Bučovice",
+                "parent": 8,
+                "workplace": 6
+            },
+            {
+                "id": 19,
+                "name": "LS Černá Hora",
+                "parent": 8,
+                "workplace": 7
+            },
+            {
+                "id": 9,
+                "name": "KŘ České Budějovice",
+                "parent": 2,
+                "workplace": 8
+            },
+            {
+                "id": 20,
+                "name": "LS Český Krumlov",
+                "parent": 9,
+                "workplace": 9
+            },
+            {
+                "id": 21,
+                "name": "LS Hluboká nad Vltavou",
+                "parent": 9,
+                "workplace": 10
+            },
+            {
+                "id": 13,
+                "name": "KŘ Choceň",
+                "parent": 2,
+                "workplace": 11
+            },
+            {
+                "id": 17,
+                "name": "LS Svitavy",
+                "parent": 13,
+                "workplace": 12
+            }
+        ]
+
+### Create group [POST]
+Kořenový uzel je vytvářen automaticky. Takto můžeme vytvořit další úrovně stromu. V nově vytvořené skupině jsem automaticky adminem.
+Poté mohu admina předat někomu jinému.
+
++ Request (application/json)
+
+        {
+            "name": "LS Bučovice",
+            "parent": 8
+        }
+
++ Response 201
+
+        {
+            "id": 18,
+            "name": "LS Bučovice",
+            "parent": 8,
+            "workplace": 6
+        }
+
+## Group [/groups/{id}]
++ Parameters
+    + id: 12 (number) - id skupiny
+
+### Retrieve group [GET]
++ Response 200
+
+        {
+            "id": 18,
+            "name": "LS Bučkovice",
+            "parent": 19,
+            "workplace": 6
+        }
+
+### Replace group [PUT]
++ Request (application/json)
+
+        {
+            "id": 18,
+            "name": "LS Bučkovice",
+            "parent": 19
+        }
+
++ Response 200
+
+        {
+            "id": 18,
+            "name": "LS Bučkovice",
+            "parent": 19,
+            "workplace": 6
+        }
+
+### Delete group [DELETE]
++ Response 204
+
+
+# Group Workplaces
+Workplace je obecný pojem pro izolovaný prostor uživatelů. Workplace může představovat celý systém nebo jeho podmnožinu (skin,
+firma, lokalita,...). Uživatel patří do jednoho nebo více workplaces, v každém má přiřazené (ne nutně stejné) role. Workplace
+s ID = 1 představuje celý systém. Workplaces nevytváříme ručně, ale jsou vytvořeny automaticky spolu s entitou, ke které patří
+(systém, skin, firma, lokalita,...)
+
+## Workplace [/workplace/{id}]
+Obsahuje práva, která maximálně mohou mít jeho členové.
+
++ Parameters
+    + id: 7 (number) - ID uživatelského prostoru
+
+### Retrieve workplace [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 7,
+            "permissions": [
+                "READ_USERS",
+                "WRITE_USERS"
+            ]
+        }
+
+
+# Group Roles
+Role uživatele definuje oprávnění, která uživatel má. Defaultně se role vztahují pouze pro aktuální workplace (u stromu skupin by asi bylo vhodné je sdílet).
+
+## Role collection [/roles]
+
+### List roles [GET]
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 1,
+                "workplace": 1,
+                "name": "superadmin",
+                "permissions": [
+                    "READ_USERS",
+                    "WRITE_USERS",
+                    "READ_ROLES",
+                    "WRITE_ROLES",
+                    "READ_DEVICES",
+                    "WRITE_DEVICES"
+
                 ]
             },
             {
-                "id": 65,
-                "deviceId": 442,
-                "date": "2017-09-27T11:12:35.124+02:00",
-                "sensors": [
-                    {
-                        "id": 32,
-                        "name": "Hmotnost brouků",
-                        "value": 52
-                    },
-                    {
-                        "id": 45,
-                        "name": "Stav baterie",
-                        "value": 89
-                    }
+                "id": 12,
+                "workplace": 1,
+                "name": "Správce",
+                "permissions": [
+                    "READ_USERS",
+                    "WRITE_USERS"
                 ]
             },
             {
-                "id": 70,
-                "deviceId": 621,
-                "date": "2017-09-27T11:12:44.954+02:00",
-                "sensors": [
-                    {
-                        "id": 61,
-                        "name": "Teplota",
-                        "value": 55
-                    }
+                "id": 13,
+                "workplace": 1,
+                "name": "Účetní",
+                "permissions": [
+                    "READ_USERS"
                 ]
             }
         ]
 
-## Device state event [/devices/state-events/{id}]
-+ Parameters
-    + id: 70 (number) - id události
+### Create role [POST]
 
-### Retrieve device state event [GET]
++ Request (application/json)
+
+        {
+            "name": "Správce",
+            "permissions": [
+                "READ_USERS",
+                "WRITE_USERS"
+            ]
+        }
+
++ Response 201
+
+        {
+            "id": 12,
+            "workplace": 1,
+            "name": "Správce",
+            "permissions": [
+                "READ_USERS",
+                "WRITE_USERS"
+            ]
+        }
+
+## Role [/roles/{id}]
++ Parameters
+
+    + id: 27 (number) - ID role
+
+### Retrieve role [GET]
 + Response 200 (application/json)
 
         {
-            "id": 70,
-            "deviceId": 621,
-            "date": "2017-09-27T11:12:44.954+02:00",
-            "sensors": [
-                {
-                    "id": 61,
-                    "name": "Teplota",
-                    "value": 55
-                }
+            "id": 12,
+            "workplace": 1,
+            "name": "Správce",
+            "permissions": [
+                "READ_USERS",
+                "WRITE_USERS"
             ]
         }
+
+### Replace role [PUT]
++ Request (application/json)
+
+        {
+            "id": 12,
+            "name": "Správce",
+            "permissions": [
+                "READ_USERS",
+                "WRITE_USERS",
+                "READ_ROLES"
+            ]
+        }
+
++ Response 200
+
+        {
+            "id": 12,
+            "workplace": 1,
+            "name": "Správce",
+            "permissions": [
+                "READ_USERS",
+                "WRITE_USERS",
+                "READ_ROLES"
+            ]
+        }
+
+### Delete role [DELETE]
++ Response 204
+
+
+# Group User memberships
+Přiřazení uživatele do workplace a nastavení příslušných rolí. Atribut `admin` říká, že uživatel má všechna práva workplace (každý
+workplace musí mít minimálně jednoho admina).
+
+## User membership collection [/memberships]
+
+### List memberships [GET]
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 145,
+                "user": 1,
+                "workplace": 1,
+                "admin": true,
+                "roles": []
+            },
+            {
+                "id": 163,
+                "user": 12,
+                "workplace": 1,
+                "admin": false,
+                "roles": [12, 13]
+            }
+        ]
+
+### Create membership [POST]
++ Request (application/json)
+
+        {
+            "user": 12,
+            "roles": [12, 13]
+        }
+
++ Response 204
+
+## User membership [/memberships/{id}]
++ Parameters
+    + id: 12 (number) - ID uživatele
+
+### Retrieve user [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 35,
+            "user": 12,
+            "roles": [12, 13]
+        }
+
+### Replace user [PUT]
++ Request (application/json)
+
+        {
+            "user": 12,
+            "roles": [13]
+        }
+        
++ Response 200
+
+        {
+            "user": 12,
+            "roles": [13]
+        }
+
+### Delete user [DELETE]
++ Response 204
 
 
 # Group Device types
@@ -148,7 +536,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
 
 ## Device type collection [/device-types]
 
-### List all types [GET]
+### List types [GET]
 + Response 200 (application/json)
 
         [
@@ -199,7 +587,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
             }
         ]
 
-### Create new type [POST]
+### Create type [POST]
 + Request (application/json)
 
         {
@@ -368,7 +756,8 @@ Hromadně vytvoří daný počet zařízení tohoto typu
 + Request (application/json)
 
         {
-            "quantity": 2
+            "quantity": 2,
+            "group": 18
         }
 
 + Response 204
@@ -380,7 +769,7 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
 
 ## Device collection [/devices]
 
-### List all devices [GET /devices{?group}]
+### List devices [GET /devices{?group}]
 + Parameters
     + `group`: 2 (optional, number) - ID skupiny, jež omezuje množinu požadovaných zařízení. Každé vrácené zařízení musí mít tuto skupinu na cestě stromu od listu (tj. zařízení) ke kořenu stromu skupin.
     
@@ -389,6 +778,7 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
         [
             {
                 "id": 504,
+                "group": 18,
                 "type": 442,
                 "typeName": "Lapač kůrovce",
                 "externalId": "NSM4577",
@@ -416,6 +806,7 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
             },
             {
                 "id": 601,
+                "group": 18,
                 "type": 442,
                 "typeName": "Lapač kůrovce",
                 "externalId": "NSM4588",
@@ -452,6 +843,7 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
 
         {
             "id": 504,
+            "group": 18,
             "type": 442,
             "typeName": "Lapač kůrovce",
             "externalId": "NSM4577",
@@ -478,11 +870,12 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
             ]
         }
 
-### Update device [PUT]
+### Replace device [PUT]
 + Request (application/json)
 
         {
             "id": 504,
+            "group": 18,
             "externalId": "NSM4576",
             "state": "ACTIVE",
             "geolocation": {
@@ -495,6 +888,7 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
 
         {
             "id": 504,
+            "group": 18,
             "type": 442,
             "typeName": "Lapač kůrovce",
             "externalId": "NSM4576",
@@ -525,11 +919,89 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
 + Response 204
 
 
+# Group Device state events
+
+Události o stavu senzorů odesílané ze zařízení.
+
+## Device state event collection [/devices/state-events]
+
+### List device state events  [GET /devices/state-events{?device-type,device}]
++ Parameters
+    + `device-type` (optional, number) - ID typu zařízení, zajímají nás pouze události ze zařízení daného typu.
+    + `device` (optional, number) - ID zařízení, zajímají nás pouze události z konkrétního zařízení.
+    
++ Response 200 (application/json)
+
+        [
+            {
+                "id": 63,
+                "device": 442,
+                "date": "2017-09-27T11:12:25.284+02:00",
+                "sensors": [
+                    {
+                        "id": 45,
+                        "name": "Stav baterie",
+                        "value": 90
+                    }
+                ]
+            },
+            {
+                "id": 65,
+                "device": 442,
+                "date": "2017-09-27T11:12:35.124+02:00",
+                "sensors": [
+                    {
+                        "id": 32,
+                        "name": "Hmotnost brouků",
+                        "value": 52
+                    },
+                    {
+                        "id": 45,
+                        "name": "Stav baterie",
+                        "value": 89
+                    }
+                ]
+            },
+            {
+                "id": 70,
+                "device": 621,
+                "date": "2017-09-27T11:12:44.954+02:00",
+                "sensors": [
+                    {
+                        "id": 61,
+                        "name": "Teplota",
+                        "value": 55
+                    }
+                ]
+            }
+        ]
+
+## Device state event [/devices/state-events/{id}]
++ Parameters
+    + id: 70 (number) - id události
+
+### Retrieve device state event [GET]
++ Response 200 (application/json)
+
+        {
+            "id": 70,
+            "device": 621,
+            "date": "2017-09-27T11:12:44.954+02:00",
+            "sensors": [
+                {
+                    "id": 61,
+                    "name": "Teplota",
+                    "value": 55
+                }
+            ]
+        }
+
+
 # Group Reports
 
 # Report collection [/report]
 
-### List all reports [GET]
+### List reports [GET]
 + Response 200 (application/json)
 
         [
@@ -597,7 +1069,7 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
             }
         ]
 
-### Create new report [POST]
+### Create report [POST]
 + Request (application/json)
 
         {
@@ -685,7 +1157,7 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
             }
         }
 
-### Update report [PUT]
+### Replace report [PUT]
 + Request (application/json)
 
         {
@@ -741,139 +1213,3 @@ Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji
 
 ### Delete report [DELETE]
 + Response 204
-
-
-# Group Users
-
-Uživatelské účty.
-
-## User collection [/users]
-
-### List all users [GET]
-+ Response 200 (application/json)
-
-        [
-            {
-                "id": 12,
-                "firstName": "Jan",
-                "lastName": "Novák",
-                "email": "jan.novak@email.cz",
-                "phone": "777123456",
-                "devices": [
-                    504
-                ]
-            },
-            {
-                "id": 16,
-                "firstName": "František",
-                "lastName": "Novotný",
-                "email": "fnovotny@email.cz",
-                "phone": "777000000",
-                "devices": [
-                    601
-                ]
-            }
-        ]
-
-
-### Create new user [POST]
-+ Request (application/json)
-
-        {
-            "firstName": "Jan",
-            "lastName": "Novák",
-            "email": "jan.novak@email.cz",
-            "phone": "777123456"
-        }
-
-+ Response 201
-
-        {
-            "id": 12,
-            "firstName": "Jan",
-            "lastName": "Novák",
-            "email": "jan.novak@email.cz",
-            "phone": "777123456"
-        }
-
-## User [/users/{id}]
-+ Parameters
-    + id: 12 (number) - id uživatele
-
-### Retrieve user [GET]
-+ Response 200 (application/json)
-
-        {
-            "id": 12,
-            "firstName": "Jan",
-            "lastName": "Novák",
-            "email": "jan.novak@email.cz",
-            "phone": "777123456",
-            "devices": [
-                504
-            ]
-        }
-
-### Update user [PUT]
-+ Request (application/json)
-
-        {
-            "id": 12,
-            "firstName": "Jan",
-            "lastName": "Novák",
-            "email": "jan.novak@email.com",
-            "phone": "777123456"
-        }
-        
-+ Response 200
-
-        {
-            "id": 12,
-            "firstName": "Jan",
-            "lastName": "Novák",
-            "email": "jan.novak@email.com",
-            "phone": "777123456",
-            "devices": [
-                504
-            ]
-        }
-
-### Delete user [DELETE]
-+ Response 204
-
-### Login user [POST /oauth/token]
-
-+ Request (multipart/form-data; boundary=----WebKitFormBoundary)
-
-        ------WebKitFormBoundary
-        Content-Disposition: form-data; name="grant_type"
-        
-        password
-        ------WebKitFormBoundary
-        Content-Disposition: form-data; name="scope"
-        
-        trust
-        ------WebKitFormBoundary
-        Content-Disposition: form-data; name="username"
-        
-        admin@netvoice.cz
-        ------WebKitFormBoundary
-        Content-Disposition: form-data; name="password"
-        
-        123456
-        ------WebKitFormBoundary--
-    
-+ Response 200 (application/json)
-
-        {
-            "access_token": "8e735586-04b7-46df-ab7a-d89918d99bcb",
-            "token_type": "bearer",
-            "refresh_token": "7483d27f-dddd-49b8-a396-302ec722e8c0",
-            "expires_in": 43199,
-            "scope": "trust"
-        }
-        
-
-
-### Authorization test [GET /authorized-resource]
-+ Response 401
