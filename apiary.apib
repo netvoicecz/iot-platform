@@ -88,8 +88,29 @@ Uživatelé systému, ať už jde o koncové uživatele nebo administrátory.
             "phone": "777123456"
         }
 
+
 ### Delete user [DELETE]
 + Response 204
+
+## Me [/users/me]
+### Retrieve me [GET]
+* currentWorkplace - ID uživatelského prostoru, který má uživatel právě aktivní
+* currentPermissions - práva v aktuální workplace (zkratka, aby se nemusela tahat zvlášť)
+
++ Response 200 (application/json)
+
+        {
+            "id": 12,
+            "firstName": "Jan",
+            "lastName": "Novák",
+            "email": "jan.novak@email.cz",
+            "phone": "777123456",
+            "currentWorkplace": 7,
+            "currentPermissions": [
+                "READ_USERS",
+                "WRITE_USERS"
+            ]
+        }
 
 ### Login user [POST /oauth/token]
 
@@ -330,6 +351,9 @@ firma, lokalita,...). Uživatel patří do jednoho nebo více workplaces, v kaž
 s ID = 1 představuje celý systém. Workplaces nevytváříme ručně, ale jsou vytvořeny automaticky spolu s entitou, ke které patří
 (systém, skin, firma, lokalita,...)
 
+Důvod, proč zavádíme navíc tuto entitu je ten, že bez ní bychom museli správu uživatelů, rolí apod. implementovat pro systém, skin,
+skupinu aj. zvlášť. Díky workplace to ale implementujeme jen jednou.
+
 ## Workplace [/workplace/{id}]
 Obsahuje práva, která maximálně mohou mít jeho členové.
 
@@ -349,7 +373,11 @@ Obsahuje práva, která maximálně mohou mít jeho členové.
 
 
 # Group Roles
-Role uživatele definuje oprávnění, která uživatel má. Defaultně se role vztahují pouze pro aktuální workplace (u stromu skupin by asi bylo vhodné je sdílet).
+Role uživatele definuje oprávnění, která uživatel má. Role nejsou globální pro celý systém, ale každý workplace má svoji sadu rolí (které vytvářejí jeho správci).
+
+TODO u stromu skupin by asi bylo vhodné role sdílet.
+
+* `workplace` - ID uživatelského prostoru, ve kterém je role definovaná.
 
 ## Role collection [/roles]
 
@@ -463,8 +491,12 @@ Role uživatele definuje oprávnění, která uživatel má. Defaultně se role 
 
 
 # Group User memberships
-Přiřazení uživatele do workplace a nastavení příslušných rolí. Atribut `admin` říká, že uživatel má všechna práva workplace (každý
-workplace musí mít minimálně jednoho admina).
+Představuje přiřazení uživatele do workplace a nastavení příslušných rolí. Když chci uživatele přiřadit do workplace, vytvořím tento objekt, ve kterém řeknu:
+
+* `user` - kterého uživatele přiřazuji
+* `workplace` (read only) - do kterého workplace (při zápisu se vždy použije aktuální workplace)
+* `admin` - jestli je uživatel administrátorem daného workplace (potom má automaticky všechna práva, která jsou definována ve workplace), každý workplace musí mít minimálně jednoho admina
+* `roles` - jaké role uživatel ve workplace bude mít (může jich být více)
 
 ## User membership collection [/memberships]
 
@@ -493,6 +525,7 @@ workplace musí mít minimálně jednoho admina).
 
         {
             "user": 12,
+            "admin": false,
             "roles": [12, 13]
         }
 
@@ -500,33 +533,38 @@ workplace musí mít minimálně jednoho admina).
 
 ## User membership [/memberships/{id}]
 + Parameters
-    + id: 12 (number) - ID uživatele
+    + id: 12 (number) - ID členství v uživatelském prostoru
 
-### Retrieve user [GET]
+### Retrieve membership [GET]
 + Response 200 (application/json)
 
         {
-            "id": 35,
-            "user": 12,
+            "id": 12,
+            "user": 6,
+            "admin": false,
             "roles": [12, 13]
         }
 
-### Replace user [PUT]
+### Replace membership [PUT]
 + Request (application/json)
 
         {
-            "user": 12,
+            "id": 12,
+            "user": 6,
+            "admin": false,
             "roles": [13]
         }
         
 + Response 200
 
         {
+            "id": 12,
             "user": 12,
+            "admin": false,
             "roles": [13]
         }
 
-### Delete user [DELETE]
+### Delete membership [DELETE]
 + Response 204
 
 
@@ -925,9 +963,9 @@ Události o stavu senzorů odesílané ze zařízení.
 
 ## Device state event collection [/devices/state-events]
 
-### List device state events  [GET /devices/state-events{?device-type,device}]
+### List device state events  [GET /devices/state-events{?device_type,device}]
 + Parameters
-    + `device-type` (optional, number) - ID typu zařízení, zajímají nás pouze události ze zařízení daného typu.
+    + `device_type` (optional, number) - ID typu zařízení, zajímají nás pouze události ze zařízení daného typu.
     + `device` (optional, number) - ID zařízení, zajímají nás pouze události z konkrétního zařízení.
     
 + Response 200 (application/json)
@@ -997,9 +1035,43 @@ Události o stavu senzorů odesílané ze zařízení.
         }
 
 
+# Group Sensor history
+
+## Sensor history [/sensors/{id}/history]
++ Parameters
+    + `id`: 45 (number) - ID senzoru
+
+### Retrieve sensor history [GET]
++ Response 200 (application/json)
+
+        {
+            "sensorId": 45,
+            "sensorName": "Stav baterie",
+            "unit": "%",
+            "data": [
+                {
+                    "date": "2017-09-27T11:12:28.000+02:00",
+                    "value": 90
+                },
+                {
+                    "date": "2017-09-27T11:12:38.000+02:00",
+                    "value": 89
+                },
+                {
+                    "date": "2017-09-27T11:12:48.000+02:00",
+                    "value": 87
+                },
+                {
+                    "date": "2017-09-27T11:12:58.000+02:00",
+                    "value": 84
+                }
+            ]
+        }
+
+
 # Group Reports
 
-# Report collection [/report]
+## Report collection [/report]
 
 ### List reports [GET]
 + Response 200 (application/json)
