@@ -1,4 +1,4 @@
-FORMAT: 1A
+﻿FORMAT: 1A
 HOST: https://internetthings.cz/api/
 
 # IoT Platform
@@ -1034,6 +1034,26 @@ Události o stavu senzorů odesílané ze zařízení.
             ]
         }
 
+
+# Group Command
+
+## Command [/command/{id}]
++ Parameters
+    + `id`: 45 (number) - device ID
+
+### Send command[POST]
++ Request (application/json)
+
+        {
+            "command": "Otoč parabolu",
+            "params": {
+			"napozici" : "5", 
+        		"rychlost" : "STREDNI"
+			"horizontalne" : "TRUE"
+		}
+        }
+
++ Response 204
 
 # Group Sensor history
 
