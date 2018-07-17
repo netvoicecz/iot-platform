@@ -1,4 +1,4 @@
-﻿FORMAT: 1A
+FORMAT: 1A
 HOST: https://internetthings.cz/api/
 
 # IoT Platform
@@ -152,7 +152,10 @@ Uživatelé systému, ať už jde o koncové uživatele nebo administrátory.
 
 # Group Companies
 
-Company samotná přímo není workplace, ale obsahuje strom skupin, jejíž uzly jsou workplaces.
+Company představuje firmu. Firma se člení na skupiny, které tvoří stromovou strukturu (např. skupina
+"generální ředitelství" tvoří kořen stromu, pod ním jsou skupiny pro krajská ředitelství atd.).
+`rootGroup` je odkaz na kořen firemního stromu. Jeho potomky je pak možné dohledat přes api pro Groups.
+Company samotná není workplace, ale její skupiny ano.
 
 ## Company collection [/companies]
 ### List companies [GET]
@@ -173,6 +176,7 @@ Company samotná přímo není workplace, ale obsahuje strom skupin, jejíž uzl
 
 ### Create company [POST]
 Firmu vytváří přímo koncový uživatel (nikoli admin). Sám je automaticky přidán mezi členy firmy.
+Spolu s company je automaticky vytvořen root jejích skupin.
 
 + Request (application/json)
 
@@ -585,7 +589,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                     {
                         "id": 224,
                         "name": "Hmotnost brouků",
-                        "type": "NUMBER",
+                        "valueType": "NUMBER",
                         "unit": "g",
                         "alert": {
                             "direction": "LESS_IS_BETTER",
@@ -596,7 +600,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                     {
                         "id": 196,
                         "name": "Stav baterie",
-                        "type": "NUMBER",
+                        "valueType": "NUMBER",
                         "unit": "%",
                         "alert": {
                             "direction": "MORE_IS_BETTER",
@@ -613,7 +617,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                     {
                         "id": 215,
                         "name": "Teplota",
-                        "type": "NUMBER",
+                        "valueType": "NUMBER",
                         "unit": "°C",
                         "alert": {
                             "direction": "LESS_IS_BETTER",
@@ -633,7 +637,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
             "sensors": [
                 {
                     "name": "Hmotnost brouků",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "g",
                     "alert": {
                         "direction": "LESS_IS_BETTER",
@@ -643,7 +647,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                 },
                 {
                     "name": "Stav baterie",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "%",
                     "alert": {
                         "direction": "MORE_IS_BETTER",
@@ -663,7 +667,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                 {
                     "id": 224,
                     "name": "Hmotnost brouků",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "g",
                     "alert": {
                         "direction": "LESS_IS_BETTER",
@@ -674,7 +678,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                 {
                     "id": 196,
                     "name": "Stav baterie",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "%",
                     "alert": {
                         "direction": "MORE_IS_BETTER",
@@ -699,7 +703,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                 {
                     "id": 224,
                     "name": "Hmotnost brouků",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "g",
                     "alert": {
                         "direction": "LESS_IS_BETTER",
@@ -710,7 +714,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                 {
                     "id": 196,
                     "name": "Stav baterie",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "%",
                     "alert": {
                         "direction": "MORE_IS_BETTER",
@@ -731,7 +735,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                 {
                     "id": 224,
                     "name": "Hmotnost obsahu",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "g",
                     "alert": {
                         "direction": "LESS_IS_BETTER",
@@ -742,7 +746,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                 {
                     "id": 196,
                     "name": "Stav baterie",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "%",
                     "alert": {
                         "direction": "MORE_IS_BETTER",
@@ -762,7 +766,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                 {
                     "id": 224,
                     "name": "Hmotnost obsahu",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "g",
                     "alert": {
                         "direction": "LESS_IS_BETTER",
@@ -773,7 +777,7 @@ Typ zařízení předepisuje společné vlastnosti zařízení.
                 {
                     "id": 196,
                     "name": "Stav baterie",
-                    "type": "NUMBER",
+                    "valueType": "NUMBER",
                     "unit": "%",
                     "alert": {
                         "direction": "MORE_IS_BETTER",
@@ -803,13 +807,13 @@ Hromadně vytvoří daný počet zařízení tohoto typu
 
 # Group Devices
 
-Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji polohu, baterii a připojení k internetu.
+Zařízení (věci v pojetí Internet of Things). Typické zařízení má svoji polohu, baterii a připojení k internetu. Každé zařízení spadá do právě jedné skupiny (Group).
 
 ## Device collection [/devices]
 
 ### List devices [GET /devices{?group}]
 + Parameters
-    + `group`: 2 (optional, number) - ID skupiny, jež omezuje množinu požadovaných zařízení. Každé vrácené zařízení musí mít tuto skupinu na cestě stromu od listu (tj. zařízení) ke kořenu stromu skupin.
+    + `group`: 2 (optional, number) - umožňuje filtrovat zažízení podle ID skupiny. Vrací zařízení z dané skupiny a rekurzivně všech jejích podskupin. (TODO mohl by se hodit druhý parametr, který povolí/zakáže rekurzivní vyhledávání)
     
 + Response 200 (application/json)
 
@@ -1035,26 +1039,6 @@ Události o stavu senzorů odesílané ze zařízení.
         }
 
 
-# Group Command
-
-## Command [/command/{id}]
-+ Parameters
-    + `id`: 45 (number) - device ID
-
-### Send command[POST]
-+ Request (application/json)
-
-        {
-            "command": "Otoč parabolu",
-            "params": {
-			"napozici" : "5", 
-        		"rychlost" : "STREDNI"
-			"horizontalne" : "TRUE"
-		}
-        }
-
-+ Response 204
-
 # Group Sensor history
 
 ## Sensor history [/sensors/{id}/history]
@@ -1110,14 +1094,14 @@ Události o stavu senzorů odesílané ze zařízení.
                     }
                 ],
                 "onEnter": {
-                    "email": [
+                    "emails": [
                         "ondrej.michal@netvoice.cz",
                         "manager@netvoice.cz"
                     ],
                     "state": "WARNING"
                 },
                 "onExit": {
-                    "email": [
+                    "emails": [
                         "manager@netvoice.cz"
                     ]
                 }
@@ -1134,7 +1118,7 @@ Události o stavu senzorů odesílané ze zařízení.
                     }
                 ],
                 "onEnter": {
-                    "email": ["ondrej.michal@netvoice.cz"],
+                    "emails": ["ondrej.michal@netvoice.cz"],
                     "sms": ["+420721000000"],
                     "state": "CRITICAL"
                 }
@@ -1175,14 +1159,14 @@ Události o stavu senzorů odesílané ze zařízení.
                 }
             ],
             "onEnter": {
-                "email": [
+                "emails": [
                     "ondrej.michal@netvoice.cz",
                     "manager@netvoice.cz"
                 ],
                 "state": "WARNING"
             },
             "onExit": {
-                "email": [
+                "emails": [
                     "manager@netvoice.cz"
                 ]
             }
@@ -1203,14 +1187,14 @@ Události o stavu senzorů odesílané ze zařízení.
                 }
             ],
             "onEnter": {
-                "email": [
+                "emails": [
                     "ondrej.michal@netvoice.cz",
                     "manager@netvoice.cz"
                 ],
                 "state": "WARNING"
             },
             "onExit": {
-                "email": [
+                "emails": [
                     "manager@netvoice.cz"
                 ]
             }
@@ -1236,14 +1220,14 @@ Události o stavu senzorů odesílané ze zařízení.
                 }
             ],
             "onEnter": {
-                "email": [
+                "emails": [
                     "ondrej.michal@netvoice.cz",
                     "manager@netvoice.cz"
                 ],
                 "state": "WARNING"
             },
             "onExit": {
-                "email": [
+                "emails": [
                     "manager@netvoice.cz"
                 ]
             }
@@ -1264,13 +1248,13 @@ Události o stavu senzorů odesílané ze zařízení.
                 }
             ],
             "onEnter": {
-                "email": [
+                "emails": [
                     "ondrej.michal@netvoice.cz"
                 ],
                 "state": "WARNING"
             },
             "onExit": {
-                "email": [
+                "emails": [
                     "ondrej.michal@netvoice.cz"
                 ]
             }
@@ -1291,13 +1275,13 @@ Události o stavu senzorů odesílané ze zařízení.
                 }
             ],
             "onEnter": {
-                "email": [
+                "emails": [
                     "ondrej.michal@netvoice.cz"
                 ],
                 "state": "WARNING"
             },
             "onExit": {
-                "email": [
+                "emails": [
                     "ondrej.michal@netvoice.cz"
                 ]
             }
