@@ -533,7 +533,15 @@ Představuje přiřazení uživatele do workplace a nastavení příslušných r
             "roles": [12, 13]
         }
 
-+ Response 204
++ Response 201
+
+        {
+            "id": 163,
+            "user": 12,
+            "workplace": 1,
+            "admin": false,
+            "roles": [12, 13]
+        }
 
 ## User membership [/memberships/{id}]
 + Parameters
@@ -545,6 +553,7 @@ Představuje přiřazení uživatele do workplace a nastavení příslušných r
         {
             "id": 12,
             "user": 6,
+            "workplace": 1,
             "admin": false,
             "roles": [12, 13]
         }
@@ -564,6 +573,7 @@ Představuje přiřazení uživatele do workplace a nastavení příslušných r
         {
             "id": 12,
             "user": 12,
+            "workplace": 1,
             "admin": false,
             "roles": [13]
         }
@@ -1045,16 +1055,16 @@ Události o stavu senzorů odesílané ze zařízení.
 + Parameters
     + `id`: 45 (number) - device ID
 
-### Send command[POST]
+### Create command[POST]
 + Request (application/json)
 
         {
             "command": "Otoč parabolu",
             "params": {
-			"napozici" : "5", 
-        		"rychlost" : "STREDNI"
-			"horizontalne" : "TRUE"
-		}
+                "napozici" : 5, 
+                "rychlost" : "STREDNI",
+                "horizontalne" : true
+            }
         }
 
 + Response 204
